@@ -3,90 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sci‑Fi History Timeline</title>
+<title>Sci-Fi Horizontal Timeline</title>
 <style>
-/* ===== Sci‑Fi Background ===== */
 body {
-  font-family: Arial, sans-serif;
   margin:0; padding:0;
+  font-family: Arial, sans-serif;
   background: url('https://i.imgur.com/3xEwq5Y.jpg') no-repeat center center fixed;
   background-size: cover;
   color: #fff;
+  overflow-x: hidden;
 }
 
-/* ===== Timeline ===== */
-.timeline { position: relative; max-width: 900px; margin: 50px auto; }
-.timeline::after { content: ''; position: absolute; width: 6px; background: #0ff; top: 0; bottom: 0; left: 50%; margin-left: -3px; }
+/* ===== Add Event Form Fixed Top Right ===== */
+#addEvent {
+  position: fixed;
+  top: 20px; right: 20px;
+  background: rgba(0,0,0,0.8);
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px #0ff;
+  width: 250px;
+  z-index: 100;
+}
+#addEvent input, #addEvent textarea, #addEvent button {
+  width: 100%; margin: 8px 0; padding: 8px; border-radius: 5px; border: none;
+}
+#addEvent button { background: #0ff; color:black; font-weight:bold; cursor:pointer;}
+#addEvent button:hover { background:#0cc;}
 
+/* ===== Horizontal Timeline ===== */
+.timeline-container {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  padding: 100px 20px 50px 20px;
+  height: 400px;
+  align-items: center;
+  gap: 30px;
+}
 .entry {
-  padding: 20px;
-  position: relative;
+  min-width: 250px;
   background: rgba(0,0,0,0.6);
   border-radius: 10px;
-  width: 45%;
-  margin: 20px 0;
+  padding: 15px;
   box-shadow: 0 0 10px #0ff;
+  flex-shrink: 0;
   transition: transform 0.3s;
 }
 .entry:hover { transform: scale(1.05); }
-.entry.left { left: 0; }
-.entry.right { left: 55%; }
-.entry img { max-width: 100%; margin-top: 10px; border-radius: 6px; }
+.entry img { max-width: 100%; border-radius: 6px; margin-top: 10px; }
 
-/* Timeline dots */
-.entry::after {
-  content: '';
-  position: absolute;
-  width: 20px; height: 20px;
-  background: #0ff;
-  border-radius: 50%;
-  top: 20px;
-  z‑index:1;
-}
-.entry.left::after { left: -10px; }
-.entry.right::after { left: -10px; }
-
-/* ===== Form ===== */
-form {
-  max-width: 600px; margin: 20px auto;
-  background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px;
-  box-shadow: 0 0 15px #0ff;
-}
-form input, form textarea { width: 100%; margin: 10px 0; padding: 10px; border-radius:5px; border:none; }
-form button { padding: 10px 20px; background:#0ff; border:none; border-radius:5px; cursor:pointer; color:black; font-weight:bold; }
-form button:hover { background:#0cc; }
+h2 { text-align:center; margin-top: 20px;}
 </style>
 </head>
 <body>
 
-<h2 style="text-align:center;">Sci‑Fi History Timeline</h2>
+<h2>Sci-Fi Horizontal Timeline</h2>
 
-<div class="timeline" id="timeline"></div>
+<!-- Timeline Horizontal Container -->
+<div class="timeline-container" id="timeline"></div>
 
-<!-- Add Event Form -->
+<!-- Fixed Add Event Form -->
 <form id="addEvent">
-  <h3>Add New Event</h3>
+  <h4>Add Event</h4>
   <input type="date" name="date" required />
   <input type="text" name="title" placeholder="Title" required />
   <textarea name="description" placeholder="Description" required></textarea>
   <input type="url" name="image" placeholder="Image URL (optional)" />
-  <button type="submit">Add Event</button>
+  <button type="submit">Add</button>
 </form>
 
 <script>
-// 👉 Your Web App URL
 const SHEET_API = "https://script.google.com/macros/s/AKfycby2KfoQoUV2NppBMJrWhZOaI2gmahBNfLVtG9V0NX_793E0hSvwix-9MEK5YJBi6KRS/exec";
 
-// Load timeline from Google Sheet
+// Load timeline horizontally
 async function loadTimeline(){
   const res = await fetch(SHEET_API);
   const data = await res.json();
   const container = document.getElementById("timeline");
   container.innerHTML = '';
   
-  data.forEach((item, i) => {
+  data.forEach(item => {
     const div = document.createElement("div");
-    div.className = "entry " + (i % 2 === 0 ? "left" : "right");
+    div.className = "entry";
     div.innerHTML = `
       <h3>${item.title}</h3>
       <p><i>${item.date}</i></p>
@@ -96,13 +95,12 @@ async function loadTimeline(){
     container.appendChild(div);
   });
 }
-
 loadTimeline();
 
 // Add new event to Google Sheet
-const form = document.getElementById("addEvent");
-form.addEventListener("submit", async (e) => {
+document.getElementById("addEvent").addEventListener("submit", async (e) => {
   e.preventDefault();
+  const form = e.target;
   const data = {
     date: form.date.value,
     title: form.title.value,
@@ -112,18 +110,15 @@ form.addEventListener("submit", async (e) => {
   
   const res = await fetch(SHEET_API, {
     method: "POST",
-    headers: { 'Content-Type': 'application/json' },
+    headers: {'Content-Type':'application/json'},
     body: JSON.stringify(data)
   });
-  
   const result = await res.json();
-  if(result.status === "success"){
+  if(result.status==="success"){
     alert("Event added!");
     form.reset();
     loadTimeline();
-  } else {
-    alert("Error adding event.");
-  }
+  } else { alert("Error adding event"); }
 });
 </script>
 
