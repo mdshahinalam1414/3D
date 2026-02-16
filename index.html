@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D Cartoon Visible</title>
+<title>3D Building Structure</title>
 <style>
-body { margin:0; overflow:hidden; background:#000;}
-canvas { display:block;}
+body{margin:0; overflow:hidden; background:#222;}
+canvas{display:block;}
 </style>
 </head>
 <body>
@@ -15,12 +15,13 @@ canvas { display:block;}
 <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
+// Scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000011); // Dark sci-fi background
+scene.background = new THREE.Color(0x1a1a1a);
 
 // Camera
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.set(0,1.5,4);
+camera.position.set(5,10,15);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({antialias:true});
@@ -32,55 +33,45 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff,0.7);
+const ambientLight = new THREE.AmbientLight(0xffffff,0.5);
 scene.add(ambientLight);
 
 const dirLight = new THREE.DirectionalLight(0xffffff,1);
-dirLight.position.set(5,5,5);
+dirLight.position.set(10,20,10);
 scene.add(dirLight);
 
-// Cartoon body (yellow sphere)
-const bodyMat = new THREE.MeshStandardMaterial({color:0xffcc00, roughness:0.5, metalness:0.1});
-const body = new THREE.Mesh(new THREE.SphereGeometry(1,32,32), bodyMat);
-scene.add(body);
+// Floor grid
+const gridHelper = new THREE.GridHelper(30,30,0x00ff00,0x00ff00);
+scene.add(gridHelper);
 
-// Eyes
-const eyeMat = new THREE.MeshStandardMaterial({color:0xffffff});
-const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.2,16,16), eyeMat);
-leftEye.position.set(-0.35,0.35,0.85);
-scene.add(leftEye);
+// Building structure
+const building = new THREE.Group();
 
-const rightEye = leftEye.clone();
-rightEye.position.x = 0.35;
-scene.add(rightEye);
+// Floors
+const floorMaterial = new THREE.MeshStandardMaterial({color:0x4444ff, roughness:0.6});
+const floorWidth = 4;
+const floorHeight = 0.5;
+const floorDepth = 4;
+const totalFloors = 6;
 
-// Pupils
-const pupilMat = new THREE.MeshStandardMaterial({color:0x000000});
-const leftPupil = new THREE.Mesh(new THREE.SphereGeometry(0.1,16,16), pupilMat);
-leftPupil.position.set(-0.35,0.35,0.95);
-scene.add(leftPupil);
+for(let i=0; i<totalFloors; i++){
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(floorWidth,floorHeight,floorDepth), floorMaterial);
+  floor.position.y = i*(floorHeight + 0.1) + floorHeight/2;
+  building.add(floor);
+}
 
-const rightPupil = leftPupil.clone();
-rightPupil.position.x = 0.35;
-scene.add(rightPupil);
+// Roof
+const roofMaterial = new THREE.MeshStandardMaterial({color:0xff4444, roughness:0.5});
+const roof = new THREE.Mesh(new THREE.BoxGeometry(floorWidth,floorHeight*0.3,floorDepth), roofMaterial);
+roof.position.y = totalFloors*(floorHeight + 0.1) + floorHeight*0.15;
+building.add(roof);
 
-// Simple mouth (arc)
-const mouthCurve = new THREE.Shape();
-mouthCurve.absarc(0, -0.2, 0.4, Math.PI*0.2, Math.PI*0.8, false);
-const mouthGeo = new THREE.ShapeGeometry(mouthCurve);
-const mouthMat = new THREE.MeshBasicMaterial({color:0xff0000});
-const mouth = new THREE.Mesh(mouthGeo, mouthMat);
-mouth.position.z = 0.9;
-scene.add(mouth);
+scene.add(building);
 
-// Animation
+// Animation loop
 function animate(){
   requestAnimationFrame(animate);
-  body.rotation.y += 0.01;
-  leftEye.rotation.y += 0.01;
-  rightEye.rotation.y += 0.01;
-  leftPupil.rotation.y += 0.01;
-  rightPupil.rotation.y += 0.01;
+  building.rotation.y += 0.005; // slow rotation
   controls.update();
   renderer.render(scene,camera);
 }
@@ -90,7 +81,7 @@ animate();
 window.addEventListener("resize", ()=>{
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(window.innerWidth,window.innerHeight);
 });
 </script>
 
