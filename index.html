@@ -10,59 +10,77 @@
 body {
   margin:0; padding:0;
   font-family: 'Orbitron', sans-serif;
-  background: linear-gradient(120deg, #0f0c29, #302b63, #24243e);
-  color: #00ffff;
   overflow-x: hidden;
+  color: #00ffff;
+  background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f0c29);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
 }
 
-/* ===== Header ===== */
+/* ===== Background animation ===== */
+@keyframes gradientBG {
+  0% {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100% {background-position:0% 50%;}
+}
+
 h2 {
   text-align:center; margin-top: 20px;
-  text-shadow: 0 0 10px #0ff;
+  text-shadow: 0 0 15px #0ff;
 }
 
 /* ===== Login Form ===== */
 #loginDiv {
   position: fixed; top: 20px; left: 20px;
-  background: rgba(0,0,0,0.8); padding: 15px;
-  border-radius: 10px; box-shadow: 0 0 15px #0ff;
-  width: 250px; z-index:100;
+  background: rgba(0,0,0,0.6); padding: 20px;
+  border-radius: 15px; box-shadow: 0 0 25px #0ff;
+  width: 260px; z-index:100;
+  backdrop-filter: blur(8px);
 }
 #loginDiv input, #loginDiv button {
-  width:100%; margin:8px 0; padding:8px;
-  border-radius:5px; border:none; font-family:'Orbitron', sans-serif;
+  width:100%; margin:10px 0; padding:10px;
+  border-radius:10px; border:none; font-family:'Orbitron', sans-serif;
+  background: rgba(0,0,0,0.4); color:#0ff;
 }
-#loginDiv button { background:#0ff; color:black; font-weight:bold; cursor:pointer; }
+#loginDiv input::placeholder { color:#0ff; opacity:0.6; }
+#loginDiv button { background:#0ff; color:black; font-weight:bold; cursor:pointer; transition:0.3s;}
 #loginDiv button:hover { background:#0cc; }
 
 /* ===== Add Event Form ===== */
 #addEvent {
   position: fixed; top: 20px; right: 20px;
-  background: rgba(0,0,0,0.8);
-  padding: 15px; border-radius: 10px; box-shadow: 0 0 15px #0ff;
-  width: 250px; z-index:100; display:none;
+  background: rgba(0,0,0,0.6); padding: 20px;
+  border-radius: 15px; box-shadow: 0 0 25px #0ff;
+  width: 260px; z-index:100; display:none;
+  backdrop-filter: blur(8px);
 }
 #addEvent input, #addEvent textarea, #addEvent button {
-  width: 100%; margin: 8px 0; padding: 8px; border-radius: 5px; border: none;
+  width:100%; margin:10px 0; padding:10px; border-radius:10px; border:none;
+  background: rgba(0,0,0,0.4); color:#0ff;
 }
-#addEvent button { background: #0ff; color:black; font-weight:bold; cursor:pointer;}
-#addEvent button:hover { background:#0cc;}
+#addEvent input::placeholder, #addEvent textarea::placeholder { color:#0ff; opacity:0.6; }
+#addEvent button { background:#0ff; color:black; font-weight:bold; cursor:pointer; transition:0.3s;}
+#addEvent button:hover { background:#0cc; }
 
 /* ===== Horizontal Timeline ===== */
 .timeline-container {
   display: flex; flex-direction: row; overflow-x: auto;
-  padding: 100px 20px 50px 20px; height: 400px; align-items: center; gap: 30px;
+  padding: 120px 20px 50px 20px; height: 420px; align-items: center; gap: 30px;
 }
 .entry {
-  min-width: 250px; background: rgba(0,0,0,0.6);
-  border-radius: 10px; padding: 15px; box-shadow: 0 0 15px #0ff;
-  flex-shrink: 0; transition: transform 0.3s;
+  min-width: 250px; background: rgba(0,0,0,0.5);
+  border-radius: 15px; padding: 20px; box-shadow: 0 0 25px #0ff;
+  flex-shrink: 0; transition: transform 0.3s, box-shadow 0.3s;
+  backdrop-filter: blur(6px);
 }
-.entry:hover { transform: scale(1.05); }
-.entry img { max-width: 100%; border-radius: 6px; margin-top: 10px; }
+.entry:hover { 
+  transform: scale(1.08) rotateY(3deg); 
+  box-shadow: 0 0 35px #0ff, 0 0 50px #0ff inset;
+}
+.entry img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
 .entry h3 { margin:5px 0; color:#00ffea; }
 .entry p { margin:5px 0; }
-.entry .event-date { font-weight:bold; color:#fffc00; margin-bottom:8px; }
+.entry .event-date { font-weight:bold; color:#fffc00; margin-bottom:10px; }
 
 </style>
 </head>
@@ -93,11 +111,14 @@ h2 {
 <div class="timeline-container" id="timeline"></div>
 
 <script>
-const SHEET_API = "https://script.google.com/macros/s/AKfycby2KfoQoUV2NppBMJrWhZOaI2gmahBNfLVtG9V0NX_793E0hSvwix-9MEK5YJBi6KRS/exec";
-
-// Admin credentials hard-coded
+// Hard-coded admin credentials
 const adminUser = "admin";
 const adminPass = "1234";
+
+// Local events array
+let events = [
+  {date:"2026-02-01", title:"Initial Event", description:"This is the first event.", image:""}
+];
 
 // Login function
 function login(){
@@ -112,17 +133,12 @@ function login(){
     }
 }
 
-// Load timeline
-async function loadTimeline(){
-    const res = await fetch(SHEET_API);
-    const data = await res.json();
-
-    // Sort events by date ascending
-    data.sort((a,b)=> new Date(a.date) - new Date(b.date));
-
+// Render timeline sorted by date
+function renderTimeline(){
+    events.sort((a,b)=> new Date(a.date) - new Date(b.date));
     const container = document.getElementById("timeline");
     container.innerHTML='';
-    data.forEach(item=>{
+    events.forEach(item=>{
         const div = document.createElement("div");
         div.className = "entry";
         div.innerHTML = `
@@ -134,30 +150,21 @@ async function loadTimeline(){
         container.appendChild(div);
     });
 }
-loadTimeline();
+renderTimeline();
 
-// Add new event
-document.getElementById("addEvent").addEventListener("submit", async (e)=>{
+// Add event locally
+document.getElementById("addEvent").addEventListener("submit",(e)=>{
     e.preventDefault();
     const form = e.target;
-    const data = {
+    const newEvent = {
         date: form.date.value,
         title: form.title.value,
         description: form.description.value,
         image: form.image.value
     };
-
-    const res = await fetch(SHEET_API,{
-        method: "POST",
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-    });
-    const result = await res.json();
-    if(result.status==="success"){
-        alert("Event added!");
-        form.reset();
-        loadTimeline();
-    } else { alert("Error adding event"); }
+    events.push(newEvent);
+    renderTimeline();
+    form.reset();
 });
 </script>
 
