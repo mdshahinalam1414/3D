@@ -3,187 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sci-Fi Timeline</title>
+<title>Sci-Fi Horizontal Timeline</title>
 <style>
-    body {
-        margin:0;
-        font-family: 'Orbitron', sans-serif;
-        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-        color: #00ffff;
-    }
-    h1 {
-        text-align:center;
-        padding:20px 0;
-        color:#00ffea;
-        text-shadow: 0 0 10px #00ffea;
-    }
-    .login-container, .admin-container {
-        max-width:400px;
-        margin:50px auto;
-        padding:30px;
-        background: rgba(0,0,0,0.6);
-        border: 1px solid #00ffea;
-        border-radius:10px;
-        box-shadow:0 0 20px #00ffea;
-    }
-    input[type=text], input[type=password], input[type=date], textarea {
-        width:100%;
-        padding:10px;
-        margin:10px 0;
-        border:none;
-        border-radius:5px;
-        background:#111;
-        color:#00ffea;
-        font-family: 'Orbitron', sans-serif;
-    }
-    button {
-        width:100%;
-        padding:10px;
-        background:#00ffea;
-        color:#000;
-        border:none;
-        border-radius:5px;
-        cursor:pointer;
-        font-weight:bold;
-        text-transform:uppercase;
-        font-family: 'Orbitron', sans-serif;
-    }
-    button:hover {
-        background:#00d4d4;
-    }
-    .timeline {
-        max-width:700px;
-        margin:50px auto;
-        position: relative;
-        padding: 0 20px;
-    }
-    .timeline::after {
-        content:'';
-        position:absolute;
-        left:50%;
-        top:0;
-        bottom:0;
-        width:4px;
-        background: #00ffea;
-        transform: translateX(-50%);
-    }
-    .event {
-        padding:20px;
-        position: relative;
-        width:50%;
-        box-sizing:border-box;
-    }
-    .event.left {
-        left:0;
-    }
-    .event.right {
-        left:50%;
-    }
-    .event::before {
-        content:'';
-        position:absolute;
-        width:20px;
-        height:20px;
-        background:#00ffea;
-        border-radius:50%;
-        top:25px;
-        z-index:1;
-    }
-    .event.left::before {
-        right:-10px;
-    }
-    .event.right::before {
-        left:-10px;
-    }
-    .event-content {
-        background: rgba(0,0,0,0.7);
-        padding:15px;
-        border-radius:10px;
-        border:1px solid #00ffea;
-        box-shadow: 0 0 10px #00ffea;
-    }
-    .event-date {
-        font-weight:bold;
-        color:#fffc00;
-        margin-bottom:10px;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+body {
+  margin:0; padding:0;
+  font-family: 'Orbitron', sans-serif;
+  background: linear-gradient(120deg, #0f0c29, #302b63, #24243e);
+  color: #00ffff;
+  overflow-x: hidden;
+}
+
+/* ===== Header ===== */
+h2 {
+  text-align:center; margin-top: 20px;
+  text-shadow: 0 0 10px #0ff;
+}
+
+/* ===== Login Form ===== */
+#loginDiv {
+  position: fixed; top: 20px; left: 20px;
+  background: rgba(0,0,0,0.8); padding: 15px;
+  border-radius: 10px; box-shadow: 0 0 15px #0ff;
+  width: 250px; z-index:100;
+}
+#loginDiv input, #loginDiv button {
+  width:100%; margin:8px 0; padding:8px;
+  border-radius:5px; border:none; font-family:'Orbitron', sans-serif;
+}
+#loginDiv button { background:#0ff; color:black; font-weight:bold; cursor:pointer; }
+#loginDiv button:hover { background:#0cc; }
+
+/* ===== Add Event Form ===== */
+#addEvent {
+  position: fixed; top: 20px; right: 20px;
+  background: rgba(0,0,0,0.8);
+  padding: 15px; border-radius: 10px; box-shadow: 0 0 15px #0ff;
+  width: 250px; z-index:100; display:none;
+}
+#addEvent input, #addEvent textarea, #addEvent button {
+  width: 100%; margin: 8px 0; padding: 8px; border-radius: 5px; border: none;
+}
+#addEvent button { background: #0ff; color:black; font-weight:bold; cursor:pointer;}
+#addEvent button:hover { background:#0cc;}
+
+/* ===== Horizontal Timeline ===== */
+.timeline-container {
+  display: flex; flex-direction: row; overflow-x: auto;
+  padding: 100px 20px 50px 20px; height: 400px; align-items: center; gap: 30px;
+}
+.entry {
+  min-width: 250px; background: rgba(0,0,0,0.6);
+  border-radius: 10px; padding: 15px; box-shadow: 0 0 15px #0ff;
+  flex-shrink: 0; transition: transform 0.3s;
+}
+.entry:hover { transform: scale(1.05); }
+.entry img { max-width: 100%; border-radius: 6px; margin-top: 10px; }
+.entry h3 { margin:5px 0; color:#00ffea; }
+.entry p { margin:5px 0; }
+.entry .event-date { font-weight:bold; color:#fffc00; margin-bottom:8px; }
+
 </style>
 </head>
 <body>
 
-<h1>Sci-Fi Timeline</h1>
+<h2>Sci-Fi Horizontal Timeline</h2>
 
-<div class="login-container" id="loginDiv">
-    <h2>Admin Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <p id="loginMsg" style="color:red;text-align:center;"></p>
+<!-- Admin Login -->
+<div id="loginDiv">
+  <h4>Admin Login</h4>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="loginMsg" style="color:red;text-align:center;"></p>
 </div>
 
-<div class="admin-container" id="adminDiv" style="display:none;">
-    <h2>Add Event</h2>
-    <input type="text" id="eventName" placeholder="Event Title">
-    <input type="date" id="eventDate" placeholder="Event Date">
-    <textarea id="eventDesc" placeholder="Event Description"></textarea>
-    <button onclick="addEvent()">Add Event</button>
-</div>
+<!-- Add Event Form -->
+<form id="addEvent">
+  <h4>Add Event</h4>
+  <input type="date" name="date" required />
+  <input type="text" name="title" placeholder="Title" required />
+  <textarea name="description" placeholder="Description" required></textarea>
+  <input type="url" name="image" placeholder="Image URL (optional)" />
+  <button type="submit">Add</button>
+</form>
 
-<div class="timeline" id="timelineDiv"></div>
+<!-- Timeline Container -->
+<div class="timeline-container" id="timeline"></div>
 
 <script>
-    // Hard-coded admin credentials
-    const adminUser = "admin";
-    const adminPass = "1234";
+const SHEET_API = "https://script.google.com/macros/s/AKfycby2KfoQoUV2NppBMJrWhZOaI2gmahBNfLVtG9V0NX_793E0hSvwix-9MEK5YJBi6KRS/exec";
 
-    let events = [];
+// Admin credentials hard-coded
+const adminUser = "admin";
+const adminPass = "1234";
 
-    function login(){
-        const user = document.getElementById('username').value;
-        const pass = document.getElementById('password').value;
-        const msg = document.getElementById('loginMsg');
-        if(user === adminUser && pass === adminPass){
-            document.getElementById('loginDiv').style.display = 'none';
-            document.getElementById('adminDiv').style.display = 'block';
-        }else{
-            msg.textContent = "Invalid username or password!";
-        }
+// Login function
+function login(){
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    const msg = document.getElementById('loginMsg');
+    if(user===adminUser && pass===adminPass){
+        document.getElementById('loginDiv').style.display = 'none';
+        document.getElementById('addEvent').style.display = 'block';
+    } else {
+        msg.textContent = "Invalid username or password!";
     }
+}
 
-    function addEvent(){
-        const name = document.getElementById('eventName').value.trim();
-        const date = document.getElementById('eventDate').value;
-        const desc = document.getElementById('eventDesc').value.trim();
+// Load timeline
+async function loadTimeline(){
+    const res = await fetch(SHEET_API);
+    const data = await res.json();
 
-        if(!name || !date) return alert("Event name and date required!");
+    // Sort events by date ascending
+    data.sort((a,b)=> new Date(a.date) - new Date(b.date));
 
-        events.push({name,date,desc});
-        events.sort((a,b) => new Date(a.date) - new Date(b.date)); // Sort by date
-        renderTimeline();
+    const container = document.getElementById("timeline");
+    container.innerHTML='';
+    data.forEach(item=>{
+        const div = document.createElement("div");
+        div.className = "entry";
+        div.innerHTML = `
+          <div class="event-date">${item.date}</div>
+          <h3>${item.title}</h3>
+          <p>${item.description}</p>
+          ${item.image ? `<img src="${item.image}" />` : ""}
+        `;
+        container.appendChild(div);
+    });
+}
+loadTimeline();
 
-        // Clear inputs
-        document.getElementById('eventName').value='';
-        document.getElementById('eventDate').value='';
-        document.getElementById('eventDesc').value='';
-    }
+// Add new event
+document.getElementById("addEvent").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+        date: form.date.value,
+        title: form.title.value,
+        description: form.description.value,
+        image: form.image.value
+    };
 
-    function renderTimeline(){
-        const timeline = document.getElementById('timelineDiv');
-        timeline.innerHTML='';
-        events.forEach((e,i)=>{
-            const div = document.createElement('div');
-            div.className = 'event ' + (i%2===0?'left':'right');
-            div.innerHTML = `
-                <div class="event-content">
-                    <div class="event-date">${e.date}</div>
-                    <h3>${e.name}</h3>
-                    <p>${e.desc}</p>
-                </div>
-            `;
-            timeline.appendChild(div);
-        });
-    }
-
+    const res = await fetch(SHEET_API,{
+        method: "POST",
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if(result.status==="success"){
+        alert("Event added!");
+        form.reset();
+        loadTimeline();
+    } else { alert("Error adding event"); }
+});
 </script>
 
 </body>
