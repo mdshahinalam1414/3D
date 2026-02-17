@@ -16,7 +16,7 @@ body{
   overflow:hidden;
 }
 
-/* ===== Futuristic Background ===== */
+/* ===== Background Canvases ===== */
 #bgCanvas{
   position:fixed;
   top:0;
@@ -83,7 +83,7 @@ body{
 .timeline-wrapper{
   position:relative;
   height:100%;
-  min-width:3500px;
+  min-width:4000px;
 }
 
 .main-line{
@@ -151,7 +151,7 @@ body{
 
   <div id="eventForm" style="display:none;">
     <hr>
-    <input type="date" id="startDate">
+    <input type="date" id="startDate" required>
     <input type="date" id="endDate">
     <input type="text" id="title" placeholder="Title">
     <textarea id="desc" placeholder="Description"></textarea>
@@ -168,6 +168,8 @@ body{
 
 <script>
 
+/* ===== Login System ===== */
+
 const adminUser="admin";
 const adminPass="1234";
 let events=[];
@@ -181,18 +183,21 @@ function login(){
  }
 }
 
+/* ===== Add Event (End Date Optional) ===== */
+
 function addEvent(){
- if(!startDate.value || !endDate.value) return;
+ if(!startDate.value) return;
 
  events.push({
    start:startDate.value,
-   end:endDate.value,
+   end:endDate.value || null,
    title:title.value,
    desc:desc.value,
    image:image.value
  });
 
  renderTimeline();
+
  startDate.value="";
  endDate.value="";
  title.value="";
@@ -200,20 +205,27 @@ function addEvent(){
  image.value="";
 }
 
+/* ===== Render Timeline ===== */
+
 function renderTimeline(){
  if(events.length===0) return;
 
  events.sort((a,b)=> new Date(a.start)-new Date(b.start));
  wrapper.querySelectorAll(".event,.branch").forEach(e=>e.remove());
 
- const spacing=400;
+ const spacing=450;
 
  createNode("START",events[0].start,0,true);
 
  events.forEach((ev,i)=>{
+
+   let dateText = ev.end 
+       ? ev.start+" → "+ev.end 
+       : ev.start;
+
    createNode(
      ev.title,
-     ev.start+" → "+ev.end+"<br>"+ev.desc,
+     dateText+"<br>"+ev.desc,
      (i+1)*spacing,
      false,
      i,
@@ -221,8 +233,15 @@ function renderTimeline(){
    );
  });
 
- createNode("END",events[events.length-1].end,(events.length+1)*spacing,true);
+ createNode(
+   "END",
+   events[events.length-1].end || events[events.length-1].start,
+   (events.length+1)*spacing,
+   true
+ );
 }
+
+/* ===== Create Event Node ===== */
 
 function createNode(title,text,leftPos,isSpecial,index=0,img=""){
 
@@ -230,8 +249,11 @@ function createNode(title,text,leftPos,isSpecial,index=0,img=""){
  node.className="event"+(isSpecial?" special":"");
  node.style.left=leftPos+"px";
 
- let topPos=isSpecial?"45%":(index%2===0?"12%":"78%");
- node.style.top=topPos;
+ let isTop = index%2===0;
+
+ node.style.top = isSpecial
+     ? "45%"
+     : (isTop ? "12%" : "78%");
 
  node.innerHTML=`<strong>${title}</strong><br>${text}`;
 
@@ -244,17 +266,22 @@ function createNode(title,text,leftPos,isSpecial,index=0,img=""){
  wrapper.appendChild(node);
 
  if(!isSpecial){
+
    const branch=document.createElement("div");
    branch.className="branch";
    branch.style.left=(leftPos+95)+"px";
    branch.style.top="50%";
-   branch.style.height=(index%2===0)?"-130px":"130px";
-   branch.style.transform=(index%2===0)?"translateY(-130px)":"";
+   branch.style.height="140px";
+
+   if(isTop){
+     branch.style.transform="translateY(-140px)";
+   }
+
    wrapper.appendChild(branch);
  }
 }
 
-/* ===== ULTRA FUTURISTIC BACKGROUND ===== */
+/* ===== Ultra Futuristic Background ===== */
 
 const bgCanvas=document.getElementById("bgCanvas");
 const bgCtx=bgCanvas.getContext("2d");
@@ -271,17 +298,19 @@ function resize(){
 resize();
 window.addEventListener("resize",resize);
 
+/* Particles */
 let particles=[];
-for(let i=0;i<160;i++){
+for(let i=0;i<180;i++){
   particles.push({
     x:Math.random()*bgCanvas.width,
     y:Math.random()*bgCanvas.height,
-    vx:(Math.random()-0.5)*0.8,
-    vy:(Math.random()-0.5)*0.8,
+    vx:(Math.random()-0.5)*1,
+    vy:(Math.random()-0.5)*1,
     r:Math.random()*2+1
   });
 }
 
+/* Grid */
 let gridOffset=0;
 
 function drawGrid(){
@@ -291,7 +320,7 @@ function drawGrid(){
   gridCtx.lineWidth=1;
 
   const gap=40;
-  gridOffset+=0.4;
+  gridOffset+=0.5;
 
   for(let x=0;x<gridCanvas.width;x+=gap){
     gridCtx.beginPath();
@@ -308,6 +337,7 @@ function drawGrid(){
   }
 }
 
+/* Glow Pulse */
 let glow=0;
 let glowDir=0.02;
 
@@ -324,10 +354,10 @@ function animate(){
     200,
     bgCanvas.width/2,
     bgCanvas.height/2,
-    900
+    1000
   );
 
-  gradient.addColorStop(0,"rgba(0,255,255,"+(0.15+glow*0.25)+")");
+  gradient.addColorStop(0,"rgba(0,255,255,"+(0.2+glow*0.3)+")");
   gradient.addColorStop(1,"transparent");
 
   bgCtx.fillStyle=gradient;
@@ -343,7 +373,7 @@ function animate(){
     bgCtx.beginPath();
     bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
     bgCtx.fillStyle="#00ffff";
-    bgCtx.shadowBlur=20;
+    bgCtx.shadowBlur=25;
     bgCtx.shadowColor="#00ffff";
     bgCtx.fill();
     bgCtx.shadowBlur=0;
